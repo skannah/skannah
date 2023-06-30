@@ -1,0 +1,40 @@
+const Web3 = require('web3');
+const fs = require('fs');
+
+// Connect to local Ethereum node
+const web3 = new Web3('http://localhost:8545');
+
+// Load the compiled contract JSON file
+const contractData = fs.readFileSync('path/to/compiledContract.json');
+const contractJson = JSON.parse(contractData);
+const abi = contractJson.abi;
+const bytecode = contractJson.bytecode;
+
+async function deployContract() {
+  // Get the list of accounts
+  const accounts = await web3.eth.getAccounts();
+  const deployer = accounts[0];
+
+  // Create a new contract instance
+  const contract = new web3.eth.Contract(abi);
+
+  // Deploy the contract
+  const deploy = contract.deploy({
+    data: bytecode
+  });
+
+  // Send the deployment transaction
+  const deployment = await deploy.send({
+    from: deployer,
+    gas: 2000000 // Adjust the gas limit as needed
+  });
+
+  // Get the deployed contract address
+  const contractAddress = deployment.options.address;
+  console.log('Contract deployed at:', contractAddress);
+
+  // Save the contract address to a file for future use
+  fs.writeFileSync('path/to/contractAddress.txt', contractAddress);
+}
+
+deployContract().catch(console.error);
